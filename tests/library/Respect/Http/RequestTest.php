@@ -7,16 +7,10 @@ namespace Respect\Http;
  * the namespace lookup rules, so Respect\Http\file_get_contents() should be called
  * instead of file_get_contents from the global scope.
  */
-function file_get_contents()
+function stream_get_contents()
 {
 	//These globals are fed by mockFileGetContents in the class below
-	global $TEST_RESPECT_HTTP_BODY,
-		   $TEST_RESPECT_HTTP_HEADERS,
-		   $TEST_RESPECT_HTTP_CALLED, 
-	       $http_response_header; 
-	
-	//this is a true PHP predefined variable, we override it here
-	$http_response_header = $TEST_RESPECT_HTTP_HEADERS;
+	global $TEST_RESPECT_HTTP_BODY, $TEST_RESPECT_HTTP_CALLED;
 	$TEST_RESPECT_HTTP_CALLED = true;
 	return $TEST_RESPECT_HTTP_BODY;
 }
@@ -31,6 +25,14 @@ function stream_context_create($contextArray)
 	if (isset($contextArray['http']['content']))
 		$TEST_RESPECT_HTTP_BODY_SENT = $contextArray['http']['content'];
 }
+function stream_get_meta_data() 
+{
+	global $TEST_RESPECT_HTTP_HEADERS,
+		   $TEST_RESPECT_HTTP_CALLED; 
+	$TEST_RESPECT_HTTP_CALLED = true;
+	return array('wrapper_data' => $TEST_RESPECT_HTTP_HEADERS);
+}
+function fopen(){}
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -96,12 +98,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		global $TEST_RESPECT_HTTP_BODY_SENT; //see the function on top of this file
 		$r = Request::post('http://example.com')
-					->body('Foo');
+					->content('Foo');
 		Request::$globalHeaders = true;
         $r->send();
-		$this->assertEquals('Foo', $r->bodySent);
+		$this->assertEquals('Foo', $r->content);
 		$this->assertEquals('Foo', $TEST_RESPECT_HTTP_BODY_SENT);
-		
+
 	 
 	}
 }
