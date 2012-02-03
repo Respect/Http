@@ -53,12 +53,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$GLOBALS['http_response_header']
 		);
 		$TEST_RESPECT_HTTP_CALLED = false;
-		Request::$globalHeaders = false;
 	}
 	protected function mockFileGetContents($contents, array $headers=array())
 	{
 		global $TEST_RESPECT_HTTP_BODY, $TEST_RESPECT_HTTP_HEADERS;
-		Request::$globalHeaders = true;
 		list($TEST_RESPECT_HTTP_BODY, $TEST_RESPECT_HTTP_HEADERS) = func_get_args();
 		return $contents;
 	}
@@ -80,15 +78,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	function test_client_should_send_headers()
 	{
 		global $TEST_RESPECT_HTTP_HEADERS_SENT; //see the function on top of this file
+		$this->mockFileGetContents('<html>FooBody', array('Host'=>'example.com'));
 		$r = Request::get('http://example.com')
 		            ->host('foobar.com')
 		            ->repeatingHeader('oops')
 		            ->repeatingHeader('uups');
-		Request::$globalHeaders = true;
         $r->send();
-		$this->assertContains('Host: foobar.com', $r->headersSent);
-		$this->assertContains('Repeating-Header: oops', $r->headersSent);
-		$this->assertContains('Repeating-Header: uups', $r->headersSent);
+		$this->assertContains('Host: foobar.com', $r->context['header']);
+		$this->assertContains('Repeating-Header: oops', $r->context['header']);
+		$this->assertContains('Repeating-Header: uups', $r->context['header']);
 		$this->assertContains('Host: foobar.com', $TEST_RESPECT_HTTP_HEADERS_SENT);
 		$this->assertContains('Repeating-Header: oops', $TEST_RESPECT_HTTP_HEADERS_SENT);
 		$this->assertContains('Repeating-Header: uups', $TEST_RESPECT_HTTP_HEADERS_SENT);
@@ -97,14 +95,39 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	function test_client_should_send_body()
 	{
 		global $TEST_RESPECT_HTTP_BODY_SENT; //see the function on top of this file
+		$this->mockFileGetContents('<html>FooBody', array('Host'=>'example.com'));
 		$r = Request::post('http://example.com')
 					->content('Foo');
-		Request::$globalHeaders = true;
         $r->send();
-		$this->assertEquals('Foo', $r->content);
+		$this->assertEquals('Foo', $r->context['content']);
 		$this->assertEquals('Foo', $TEST_RESPECT_HTTP_BODY_SENT);
+	}
 
-	 
+	function test_context_options()
+	{
+		$this->mockFileGetContents('<html>FooBody', array('Host'=>'example.com'));
+		$r = Request::get('http://example.com')
+		            ->proxy('foo')
+		            ->followRedirects(5)
+		            ->protocolVersion(1.1)
+		            ->timeout(10)
+		            ->ignoreErrors(true);
+        $r->send();
+	    $this->assertEquals('foo', $r->context['proxy']);
+	    $this->assertEquals(true, $r->context['follow_redirects']);
+	    $this->assertEquals(5, $r->context['max_redirects']);
+	    $this->assertEquals(1.1, $r->context['protocol_version']);
+	    $this->assertEquals(true, $r->context['ignore_errors']);
+	    $this->assertEquals(10, $r->context['timeout']);
+	}
+	function text_zero_redirects()
+	{
+		$this->mockFileGetContents('<html>FooBody', array('Host'=>'example.com'));
+		$r = Request::get('http://example.com')
+		            ->followRedirects(0);
+        $r->send();
+	    $this->assertEquals(false, $r->context['follow_redirects']);
+	    $this->assertArrayNotHasKey('max_redirects', $r->context);
 	}
 }
 

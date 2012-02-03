@@ -10,13 +10,9 @@ class Request extends ArrayObject
 	       $uri, 
 	       $body, 
 	       $sent = false, 
-	       $headersSent = array(), 
-	       $content,
-	       $proxy,
-	       $followRedirects,
-	       $protocolVersion,
-	       $timeout,
-	       $ignoreErrors;
+	       $context = array('method' => '', 'header' => ''),
+	       $meta,
+	       $stream;
 
 	static $globalHeaders = false;
 	static function __callStatic($method, $arguments)
@@ -28,12 +24,13 @@ class Request extends ArrayObject
 	{
 		list($headerValue) = $arguments;
 		$headerName = ucfirst(preg_replace('/[A-Z0-9]+/', '-$0', $headerName));
-		$this->headersSent[] = "$headerName: $headerValue";
+		$this->context['header'] .= "$headerName: $headerValue\r\n";
 		return $this;
 	}
 	function __construct($method, $uri)
 	{
-		list($this->method, $this->uri) = func_get_args();
+		$this->method = $this->context['method'] = strtoupper($method);
+		$this->uri = $uri;
 	}
 	function __toString()
 	{
@@ -43,66 +40,49 @@ class Request extends ArrayObject
 	}
 	function content($data)
 	{
-		$this->content = $data;
+		$this->context['content'] = $data;
 		return $this;
 	}
 	function proxy($address)
 	{
-		$this->proxy = $address;
+		$this->context['proxy'] = $address;
 		return $this;
 	}
 	function followRedirects($numberOfRedirects)
 	{
-		$this->followRedirects = $numberOfRedirects;
+		$this->context['follow_redirects'] = true;
+
+		if ($numberOfRedirects === 0)
+			$this->context['follow_redirects'] = false;
+
+		if ($numberOfRedirects)
+			$this->context['max_redirects'] = $numberOfRedirects;
+
 		return $this;
 	}
 	function protocolVersion($versionNumber)
 	{
-		$this->protocolVersion = $versionNumber;
+		$this->context['protocol_version'] = $versionNumber;
 		return $this;
 	}
 	function timeout($seconds)
 	{
-		$this->timeout = $seconds;
+		$this->context['timeout'] = $seconds;
 		return $this;
 	}
 	function ignoreErrors($shouldIgnore)
 	{
-		$this->ignoreErrors = $shouldIgnore;
+		$this->context['ignore_errors'] = $shouldIgnore;
 		return $this;
 	}
 	function send()
 	{
-		$context = array('method' => strtoupper($this->method));
-
-		if ($this->headersSent)
-			$context['header'] = implode("\r\n", $this->headersSent);
-
-		if ($this->content)
-			$context['content'] = $this->content;
-
-		if ($this->proxy)
-			$context['proxy'] = $this->proxy;
-
-		if ($this->followRedirects === 0)
-			$context['follow_redirects'] = false;
-
-		if ($this->followRedirects)
-			$context['max_redirects'] = $this->followRedirects;
-
-		if ($this->protocolVersion)
-			$context['protocol_version'] = $this->protocolVersion;
-			
-		if ($this->timeout)
-			$context['timeout'] = $this->timeout;
-			
-		if ($this->ignoreErrors)
-			$context['ignore_errors'] = $this->ignoreErrors;
-
-	    $stream = fopen($this->uri, 'rb', false, stream_context_create(array('http' => $context)));
-	    $this->body = stream_get_contents($stream);
-	    $meta = stream_get_meta_data($stream);
-		$this->exchangeArray($meta['wrapper_data']);
+	    $this->stream = fopen(
+		    $this->uri, 'rb', false, stream_context_create(array('http' => $this->context))
+	    );
+	    $this->body = stream_get_contents($this->stream);
+	    $this->meta = stream_get_meta_data($this->stream);
+		$this->exchangeArray($this->meta['wrapper_data']);
 		$this->sent = true;
 	}
 }
