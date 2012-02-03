@@ -30,12 +30,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		unset($TEST_RESPECT_HTTP_BODY, $TEST_RESPECT_HTTP_HEADERS, $GLOBALS['http_response_header']);
 		$TEST_RESPECT_HTTP_CALLED = false;
-		Client::$globalHeaders = false;
+		Request::$globalHeaders = false;
 	}
 	protected function mockFileGetContents($contents, array $headers=array())
 	{
 		global $TEST_RESPECT_HTTP_BODY, $TEST_RESPECT_HTTP_HEADERS;
-		Client::$globalHeaders = true;
+		Request::$globalHeaders = true;
 		list($TEST_RESPECT_HTTP_BODY, $TEST_RESPECT_HTTP_HEADERS) = func_get_args();
 		return $contents;
 	}
@@ -43,7 +43,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		$this->mockFileGetContents('<html>FooBody', array('Host'=>'example.com'));
 
-		$r = Client::get('http://foobarsample.com');
+		$r = Request::get('http://foobarsample.com');
 		$this->assertEquals('<html>FooBody', (string) $r);
 		$this->assertEquals($r['Host'], 'example.com');
 	}
@@ -51,7 +51,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	{
 		global $TEST_RESPECT_HTTP_CALLED; //see the function on top of this file
 		$this->mockFileGetContents('<html>This should not happen', array('Host'=>'thisshouldnothappen.com'));
-		$r = Client::get('http://foobarsample.com');
+		$r = Request::get('http://foobarsample.com');
 		$this->assertFalse($TEST_RESPECT_HTTP_CALLED);
 	}
 }

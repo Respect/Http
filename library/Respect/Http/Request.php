@@ -4,7 +4,7 @@ namespace Respect\Http;
 
 use ArrayObject;
 
-class Client extends ArrayObject
+class Request extends ArrayObject
 {
 	public $method, $uri, $sent = false, $body;
 
@@ -34,7 +34,7 @@ class Client extends ArrayObject
 		$this->body = file_get_contents($this->uri, false, $context); 
 		$this->exchangeArray(
 		    //we need this in order to be testable, sorry
-			Client::$globalHeaders ? $GLOBALS['http_response_header'] : $http_response_header
+			static::$globalHeaders ? $GLOBALS['http_response_header'] : $http_response_header
 		);
 		$this->sent = true;
 	}
