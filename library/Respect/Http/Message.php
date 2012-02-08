@@ -25,7 +25,7 @@ class Message extends ArrayObject
 	{
 		$reasonerClass = 'Respect\\Http\\Reasoners\\'.ucfirst($reasonerName);
 
-		if (!is_a($reasonerClass, "Respect\Http\\Reasonable"))
+		if (!class_exists($reasonerClass))
 			$reasonerClass = 'Respect\\Http\\Reasoners\\Header';
 
 		$reasonerReflection = new ReflectionClass($reasonerClass);

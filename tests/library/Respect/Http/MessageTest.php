@@ -112,7 +112,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase
 		            ->protocolVersion(1.1)
 		            ->timeout(10)
 		            ->ignoreErrors(true);
-        $r->send();
+		$r->send();	
 	    $this->assertEquals('foo', $r->context['proxy']);
 	    $this->assertEquals(true, $r->context['follow_redirects']);
 	    $this->assertEquals(5, $r->context['max_redirects']);
