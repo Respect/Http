@@ -7,8 +7,8 @@ use Respect\Http\Message;
 
 class ProtocolVersion implements Reasonable
 {
-	function __construct(Message $message, $name, $protocolVersion)
-	{
-		$message->context['protocol_version'] = $protocolVersion;
-	}
+    function __construct(Message $message, $name, $protocolVersion)
+    {
+        $message->context['protocol_version'] = $protocolVersion;
+    }
 }
