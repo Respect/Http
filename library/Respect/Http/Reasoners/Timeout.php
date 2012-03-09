@@ -7,8 +7,8 @@ use Respect\Http\Message;
 
 class Timeout implements Reasonable
 {
-	function __construct(Message $message, $name, $seconds)
-	{
-		$message->context['timeout'] = $seconds;
-	}
+    function __construct(Message $message, $name, $seconds)
+    {
+        $message->context['timeout'] = $seconds;
+    }
 }

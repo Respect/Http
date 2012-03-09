@@ -7,8 +7,8 @@ use Respect\Http\Message;
 
 class Proxy implements Reasonable
 {
-	function __construct(Message $message, $name, $proxy)
-	{
-		$message->context['proxy'] = $proxy;
-	}
+    function __construct(Message $message, $name, $proxy)
+    {
+        $message->context['proxy'] = $proxy;
+    }
 }

@@ -7,14 +7,14 @@ use Respect\Http\Message;
 
 class FollowRedirects implements Reasonable
 {
-	function __construct(Message $message, $name, $numberOfRedirects)
-	{
-		$message->context['follow_redirects'] = true;
+    function __construct(Message $message, $name, $numberOfRedirects)
+    {
+        $message->context['follow_redirects'] = true;
 
-		if ($numberOfRedirects === 0)
-			$message->context['follow_redirects'] = false;
+        if ($numberOfRedirects === 0)
+            $message->context['follow_redirects'] = false;
 
-		if ($numberOfRedirects)
-			$message->context['max_redirects'] = $numberOfRedirects;
-	}
+        if ($numberOfRedirects)
+            $message->context['max_redirects'] = $numberOfRedirects;
+    }
 }

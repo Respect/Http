@@ -7,8 +7,8 @@ use Respect\Http\Message;
 
 class IgnoreErrors implements Reasonable
 {
-	function __construct(Message $message, $name, $shouldIgnoreErrors)
-	{
-		$message->context['ignore_errors'] = $shouldIgnoreErrors;
-	}
+    function __construct(Message $message, $name, $shouldIgnoreErrors)
+    {
+        $message->context['ignore_errors'] = $shouldIgnoreErrors;
+    }
 }
