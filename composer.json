@@ -1,16 +1,8 @@
 {
     "name": "Respect/Http",
-    "version": "0.1.0alpha",
     "type": "library",
     "description": "A gentle HTTP client",
     "homepage": "http://github.com/Respect/Http",
-    "repositories": {
-        "repository": {
-            "vcs": {
-                "url": "http://github.com/Respect/Http"
-            }
-        }
-    },
     "license": "BSD Style",
     "authors": [
         {
